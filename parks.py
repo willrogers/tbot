@@ -5,9 +5,14 @@ import tweepy
 import urllib2
 import calendar
 import datetime
+import os
 
 URL = "http://www.parks.ox.ac.uk/closing/"
-CONFIG_FILE = "./config"
+dir = os.path.dirname(os.path.realpath(__file__))
+CONFIG_FILE = "config"
+
+
+config_path = os.path.join(dir, CONFIG_FILE)
 
 
 doc = urllib2.urlopen(URL).read()
@@ -80,7 +85,7 @@ for r in rows:
         dates[current_date].append(get_time(content))
     i += 1
 
-cfg = auth_from_file(CONFIG_FILE)
+cfg = auth_from_file(config_path)
 
 auth = tweepy.OAuthHandler(cfg['consumer_key'], cfg['consumer_secret'])
 auth.set_access_token(cfg['key'], cfg['secret'])
