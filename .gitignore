@@ -1,3 +1,5 @@
 
 # config file contains secrets
 config
+# log file
+log
