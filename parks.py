@@ -8,25 +8,13 @@ import datetime
 import os
 
 URL = "http://www.parks.ox.ac.uk/closing/"
-dir = os.path.dirname(os.path.realpath(__file__))
 CONFIG_FILE = "config"
 
 
-config_path = os.path.join(dir, CONFIG_FILE)
+# Fetch config from same directory as script.
+script_dir = os.path.dirname(os.path.realpath(__file__))
+config_path = os.path.join(script_dir, CONFIG_FILE)
 
-
-doc = urllib2.urlopen(URL).read()
-
-soup = BeautifulSoup(doc)
-
-rows = [r for r in soup.find_all('td') if not r.p.text.isspace()]
-
-
-current_month = None
-current_day = None
-current_year = None
-dates = {}
-current_date = None
 
 def auth_from_file(filename):
     with open(filename) as f:
@@ -38,6 +26,25 @@ def auth_from_file(filename):
         parts = line.split(':')
         cfg[parts[0].strip()] = parts[1].strip()
     return cfg
+
+
+def get_time(timestring):
+    return datetime.time(*(int(i) for i in timestring.split('.')))
+
+
+# Fetch the webpage
+doc = urllib2.urlopen(URL).read()
+soup = BeautifulSoup(doc)
+
+
+rows = [r for r in soup.find_all('td') if not r.p.text.isspace()]
+
+
+current_month = None
+current_day = None
+current_year = None
+dates = {}
+current_date = None
 
 def get_datetime(datestring):
     '''
@@ -70,10 +77,6 @@ def get_datetime(datestring):
     return datetime.datetime(year, current_month, day)
 
 
-def get_time(timestring):
-    return datetime.time(*(int(i) for i in content.split('.')))
-
-
 i = 0
 for r in rows:
     content = r.p.text
@@ -85,20 +88,31 @@ for r in rows:
         dates[current_date].append(get_time(content))
     i += 1
 
-cfg = auth_from_file(config_path)
 
+# Connect to Twitter.
+cfg = auth_from_file(config_path)
 auth = tweepy.OAuthHandler(cfg['consumer_key'], cfg['consumer_secret'])
 auth.set_access_token(cfg['key'], cfg['secret'])
 api = tweepy.API(auth)
+
+tweeted = False
 
 for d in sorted(dates):
     if d.date() == datetime.datetime.now().date():
         datestring = d.strftime("%a, %b %d %Y")
         sunset_time = dates[d][0].strftime("%H:%M")
         close_time = dates[d][1].strftime("%H:%M")
-        text = "%s: this week the parks close at %s (sunset %s)" % (datestring, close_time, sunset_time)
-        print "Tweeting", text
-        api.update_status(text)
-        break
+        text = ("%s: this week the parks close at %s (sunset %s)"
+                % (datestring, close_time, sunset_time))
+        print("Tweeting: %s" % text)
+        try:
+            api.update_status(text)
+            tweeted = True
+            break
+        except tweepy.TweepError as e:
+            print("Failed to tweet: %s" % e)
+
+if not tweeted:
+    print("No tweet today.")
 
 
