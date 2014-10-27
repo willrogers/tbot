@@ -89,6 +89,7 @@ def parse_rows(rows):
 
     return dates
 
+
 def tweet(api, text):
     try:
         api.update_status(text)
@@ -97,30 +98,32 @@ def tweet(api, text):
         log.warn("Failed to tweet: %s" % e)
         return False
 
-# Connect to Twitter.
-api = load_api(config_path)
 
-# Fetch the webpage
-doc = urllib2.urlopen(URL).read()
-soup = BeautifulSoup(doc)
-rows = [r.p.text for r in soup.find_all('td') if not r.p.text.isspace()]
+def tweet_update(api, dates):
+    for d in sorted(dates):
+        if d.date() == datetime.datetime.now().date():
+            datestring = d.strftime("%a, %b %d %Y")
+            sunset_time = dates[d][0].strftime("%H:%M")
+            close_time = dates[d][1].strftime("%H:%M")
+            text = ("%s: this week the parks close at %s (sunset %s)"
+                    % (datestring, close_time, sunset_time))
+            log.info("Tweeting: %s", text)
+            return tweet(api, text)
 
-# Parse the rows
-dates = parse_rows(rows)
 
-tweeted = False
+if __name__ == '__main__':
+    # Connect to Twitter.
+    api = load_api(config_path)
 
-for d in sorted(dates):
-    if d.date() == datetime.datetime.now().date():
-        datestring = d.strftime("%a, %b %d %Y")
-        sunset_time = dates[d][0].strftime("%H:%M")
-        close_time = dates[d][1].strftime("%H:%M")
-        text = ("%s: this week the parks close at %s (sunset %s)"
-                % (datestring, close_time, sunset_time))
-        log.info("Tweeting: %s", text)
-        tweeted = tweet(api, text)
+    # Fetch the webpage
+    doc = urllib2.urlopen(URL).read()
+    soup = BeautifulSoup(doc)
+    rows = [r.p.text for r in soup.find_all('td') if not r.p.text.isspace()]
 
-if not tweeted:
-    log.info("No tweet today.")
+    # Parse the rows
+    dates = parse_rows(rows)
+
+    if not tweet_update(api, dates):
+        log.info("No tweet today.")
 
 
