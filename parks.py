@@ -73,7 +73,6 @@ def parse_rows(rows):
     dates = {}
     current_date = None
     current_month = None
-    current_day = None
     current_year = None
 
     for i, row in enumerate(rows):
@@ -81,7 +80,6 @@ def parse_rows(rows):
             current_date = get_datetime(row, current_month, current_year)
             current_year = current_date.year
             current_month = current_date.month
-            current_day = current_date.day
         elif i % 3 == 1:
             dates[current_date] = [get_time(row)]
         elif i % 3 == 2:
