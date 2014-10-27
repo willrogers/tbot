@@ -13,8 +13,8 @@ log.basicConfig(level=log.INFO,
                 format='%(asctime)s - %(message)s',
                 datefmt='%d %b %Y %H:%M:%S')
 
-URL = "http://www.parks.ox.ac.uk/closing/"
-CONFIG_FILE = "config"
+URL = 'http://www.parks.ox.ac.uk/closing/'
+CONFIG_FILE = 'config'
 
 
 # Fetch config from same directory as script.
@@ -95,19 +95,19 @@ def tweet(api, text):
         api.update_status(text)
         return True
     except tweepy.TweepError as e:
-        log.warn("Failed to tweet: %s" % e)
+        log.warn('Failed to tweet: %s' % e)
         return False
 
 
 def tweet_update(api, dates):
     for d in sorted(dates):
         if d.date() == datetime.datetime.now().date():
-            datestring = d.strftime("%a, %b %d %Y")
-            sunset_time = dates[d][0].strftime("%H:%M")
-            close_time = dates[d][1].strftime("%H:%M")
-            text = ("%s: this week the parks close at %s (sunset %s)"
+            datestring = d.strftime('%a, %b %d %Y')
+            sunset_time = dates[d][0].strftime('%H:%M')
+            close_time = dates[d][1].strftime('%H:%M')
+            text = ('%s: this week the parks close at %s (sunset %s)'
                     % (datestring, close_time, sunset_time))
-            log.info("Tweeting: %s", text)
+            log.info('Tweeting: %s', text)
             return tweet(api, text)
 
 
@@ -124,6 +124,6 @@ if __name__ == '__main__':
     dates = parse_rows(rows)
 
     if not tweet_update(api, dates):
-        log.info("No tweet today.")
+        log.info('No tweet today.')
 
 
