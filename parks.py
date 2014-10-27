@@ -34,63 +34,73 @@ def get_time(timestring):
     return datetime.time(*(int(i) for i in timestring.split('.')))
 
 
-# Fetch the webpage
-doc = urllib2.urlopen(URL).read()
-soup = BeautifulSoup(doc)
-
-rows = [r.p.text for r in soup.find_all('td') if not r.p.text.isspace()]
-
-
-current_month = None
-current_day = None
-current_year = None
-dates = {}
-current_date = None
-
-def get_datetime(datestring):
+def get_datetime(datestring, last_month, last_year):
     '''
-    Some custom parsing.  Must accept:
+    Some custom parsing of table contents.  Must accept:
         - 2 January 2014
         - 4 October
         - 23
+        - 22 GMT Begins
+        - 15 BST Begins
+    If incomplete information, assume that last_month and / or
+    last_year still apply.
     '''
-    global current_month
-    global current_year
     parts = datestring.split()
     day = int(parts[0])
-    try:
-        month = parts[1]
-        if month in ['BST', 'GMT']:
-            raise IndexError()
+    if len(parts) > 1 and parts[1] in calendar.month_name:
+        mstring = parts[1]
         for i, cal_month in enumerate(calendar.month_name[1:]):
-            if month == cal_month:
-                current_month = i + 1
+            if mstring == cal_month:
+                month = i + 1
                 break
-
-    except IndexError:
-        month = current_month
+    else:
+        month = last_month
     try:
-        current_year = int(parts[2])
-        year = current_year
+        year = int(parts[2])
     except (IndexError, ValueError):
-        year = current_year
+        year = last_year
 
-    return datetime.datetime(year, current_month, day)
+    return datetime.datetime(year, month, day)
 
 
-i = 0
-for row in rows:
-    if i % 3 == 0:
-        current_date = get_datetime(row)
-    elif i % 3 == 1:
-        dates[current_date] = [get_time(row)]
-    elif i % 3 == 2:
-        dates[current_date].append(get_time(row))
-    i += 1
+def parse_rows(rows):
+    dates = {}
+    current_date = None
+    current_month = None
+    current_day = None
+    current_year = None
+
+    for i, row in enumerate(rows):
+        if i % 3 == 0:
+            current_date = get_datetime(row, current_month, current_year)
+            current_year = current_date.year
+            current_month = current_date.month
+            current_day = current_date.day
+        elif i % 3 == 1:
+            dates[current_date] = [get_time(row)]
+        elif i % 3 == 2:
+            dates[current_date].append(get_time(row))
+
+    return dates
+
+def tweet(api, text):
+    try:
+        api.update_status(text)
+        return True
+    except tweepy.TweepError as e:
+        print("Failed to tweet: %s" % e)
+        return False
 
 # Connect to Twitter.
 api = load_api(config_path)
 
+# Fetch the webpage
+doc = urllib2.urlopen(URL).read()
+soup = BeautifulSoup(doc)
+rows = [r.p.text for r in soup.find_all('td') if not r.p.text.isspace()]
+
+# Parse the rows
+dates = parse_rows(rows)
 
 tweeted = False
 
@@ -101,13 +111,7 @@ for d in sorted(dates):
         close_time = dates[d][1].strftime("%H:%M")
         text = ("%s: this week the parks close at %s (sunset %s)"
                 % (datestring, close_time, sunset_time))
-        print("Tweeting: %s" % text)
-        try:
-            api.update_status(text)
-            tweeted = True
-            break
-        except tweepy.TweepError as e:
-            print("Failed to tweet: %s" % e)
+        tweet(api, text)
 
 if not tweeted:
     print("No tweet today.")
