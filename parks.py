@@ -7,6 +7,12 @@ import calendar
 import datetime
 import os
 
+# set up logging
+import logging as log
+log.basicConfig(level=log.INFO,
+                format='%(asctime)s - %(message)s',
+                datefmt='%d %b %Y %H:%M:%S')
+
 URL = "http://www.parks.ox.ac.uk/closing/"
 CONFIG_FILE = "config"
 
@@ -88,7 +94,7 @@ def tweet(api, text):
         api.update_status(text)
         return True
     except tweepy.TweepError as e:
-        print("Failed to tweet: %s" % e)
+        log.warn("Failed to tweet: %s" % e)
         return False
 
 # Connect to Twitter.
@@ -111,9 +117,10 @@ for d in sorted(dates):
         close_time = dates[d][1].strftime("%H:%M")
         text = ("%s: this week the parks close at %s (sunset %s)"
                 % (datestring, close_time, sunset_time))
-        tweet(api, text)
+        log.info("Tweeting: %s", text)
+        tweeted = tweet(api, text)
 
 if not tweeted:
-    print("No tweet today.")
+    log.info("No tweet today.")
 
 
