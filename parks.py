@@ -16,16 +16,18 @@ script_dir = os.path.dirname(os.path.realpath(__file__))
 config_path = os.path.join(script_dir, CONFIG_FILE)
 
 
-def auth_from_file(filename):
-    with open(filename) as f:
-        lines = f.readlines()
-        lines = [l for l in lines if not l.isspace()]
+def load_api(config_file):
+    with open(config_file) as f:
+        lines = [l for l in f.readlines() if not l.isspace()]
 
     cfg = {}
     for line in lines:
         parts = line.split(':')
         cfg[parts[0].strip()] = parts[1].strip()
-    return cfg
+    auth = tweepy.OAuthHandler(cfg['consumer_key'], cfg['consumer_secret'])
+    auth.set_access_token(cfg['key'], cfg['secret'])
+    api = tweepy.API(auth)
+    return api
 
 
 def get_time(timestring):
@@ -36,8 +38,7 @@ def get_time(timestring):
 doc = urllib2.urlopen(URL).read()
 soup = BeautifulSoup(doc)
 
-
-rows = [r for r in soup.find_all('td') if not r.p.text.isspace()]
+rows = [r.p.text for r in soup.find_all('td') if not r.p.text.isspace()]
 
 
 current_month = None
@@ -78,22 +79,18 @@ def get_datetime(datestring):
 
 
 i = 0
-for r in rows:
-    content = r.p.text
+for row in rows:
     if i % 3 == 0:
-        current_date = get_datetime(content)
+        current_date = get_datetime(row)
     elif i % 3 == 1:
-        dates[current_date] = [get_time(content)]
+        dates[current_date] = [get_time(row)]
     elif i % 3 == 2:
-        dates[current_date].append(get_time(content))
+        dates[current_date].append(get_time(row))
     i += 1
 
-
 # Connect to Twitter.
-cfg = auth_from_file(config_path)
-auth = tweepy.OAuthHandler(cfg['consumer_key'], cfg['consumer_secret'])
-auth.set_access_token(cfg['key'], cfg['secret'])
-api = tweepy.API(auth)
+api = load_api(config_path)
+
 
 tweeted = False
 
