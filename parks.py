@@ -37,7 +37,15 @@ def load_api(config_file):
 
 
 def get_time(timestring):
-    return datetime.time(*(int(i) for i in timestring.split('.')))
+    formats = ['%H:%M', '%H.%M']
+    t = None
+    for f in formats:
+        try:
+            t = datetime.datetime.strptime(timestring, f).time()
+            break
+        except ValueError as e:
+            continue
+    return t
 
 
 def get_datetime(datestring, last_month, last_year):
