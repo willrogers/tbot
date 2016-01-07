@@ -84,14 +84,17 @@ def parse_rows(rows):
     current_year = None
 
     for i, row in enumerate(rows):
-        if i % 3 == 0:
-            current_date = get_datetime(row, current_month, current_year)
+        try:
+            cells = [cell.p.text for cell in row.find_all('td')]
+            assert len(cells) == 3
+            current_date = get_datetime(cells[0], current_month, current_year)
             current_year = current_date.year
             current_month = current_date.month
-        elif i % 3 == 1:
-            dates[current_date] = [get_time(row)]
-        elif i % 3 == 2:
-            dates[current_date].append(get_time(row))
+            dates[current_date] = [get_time(cells[1])]
+            dates[current_date].append(get_time(cells[2]))
+        except (ValueError, IndexError, AttributeError):
+            # Skip any rows that aren't understood.
+            continue
 
     return dates
 
@@ -124,7 +127,7 @@ if __name__ == '__main__':
     # Fetch the webpage
     doc = urllib2.urlopen(URL).read()
     soup = BeautifulSoup(doc)
-    rows = [r.p.text for r in soup.find_all('td') if not r.p.text.isspace()]
+    rows = soup.find_all('tr')
 
     # Parse the rows
     dates = parse_rows(rows)
