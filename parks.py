@@ -43,7 +43,7 @@ def get_time(timestring):
         try:
             t = datetime.datetime.strptime(timestring, f).time()
             break
-        except ValueError as e:
+        except ValueError:
             continue
     return t
 
@@ -85,7 +85,7 @@ def parse_rows(rows):
 
     for i, row in enumerate(rows):
         try:
-            cells = [cell.p.text for cell in row.find_all('td')]
+            cells = [cell.p.text.strip() for cell in row.find_all('td')]
             assert len(cells) == 3
             current_date = get_datetime(cells[0], current_month, current_year)
             current_year = current_date.year
@@ -126,6 +126,8 @@ if __name__ == '__main__':
 
     # Fetch the webpage
     doc = urllib2.urlopen(URL).read()
+    # Remove any non-breaking spaces.
+    doc = doc.replace("\xc2\xa0", " ")
     soup = BeautifulSoup(doc)
     rows = soup.find_all('tr')
 
