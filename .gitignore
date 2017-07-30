@@ -4,3 +4,13 @@ log
 
 # build artifacts
 build
+
+# compiled python
+*.pyc
+
+# vim
+*.swp
+*.swo
+
+# virtualenv
+venv
