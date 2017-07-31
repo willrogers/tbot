@@ -1,6 +1,7 @@
 import tbot
 from selenium import webdriver
 import time
+import datetime
 import parse
 
 
@@ -12,6 +13,11 @@ class Tweeter(tbot.Tweeter):
         self._opt1 = opt1
         self._opt2 = opt2
         self._msg = msg
+        self._max = 50.1
+        self._max_date = datetime.date(2017, 7, 30)
+        self._min = 49.9
+        self._min_date = datetime.date(2017, 7, 30)
+        self._last = None
 
     def _parse_odds(self, string):
         return float(string.split()[0].strip())
@@ -21,12 +27,22 @@ class Tweeter(tbot.Tweeter):
         return tweets[0].text
 
     def parse_tweet(self, tweet):
-        p = parse.parse(self._msg, tweet)
-        return float(p[0])
+        msg = ''.join([c for c in self._msg if c != '+'])
+        p = parse.parse(msg, tweet)
+        try:
+            self._last = float(p[0])
+            self._max = float(p[2])
+            self._max_date = datetime.datetime.strptime(p[3], '%b %d %Y')
+            self._min = float(p[4])
+            self._min_date = datetime.datetime.strptime(p[3], '%b %d %Y')
+        except Exception as e:
+            print(e)
+            self._last = 49.9
+
 
     def tweet(self):
         last_tweet = self.get_last_tweet()
-        last = self.parse_tweet(last_tweet)
+        self.parse_tweet(last_tweet)
         driver = webdriver.PhantomJS()
         try:
             driver.get(self._url)
@@ -46,6 +62,10 @@ class Tweeter(tbot.Tweeter):
             odds2 = self._parse_odds(r2text)
             split = (odds1 + odds2) / 2
             pc = (1 - (1 / split)) * 100
-            self._tweet(self._msg.format(pc, pc - last))
+            if pc < self._min: self._min = pc
+            if pc > self._max: self._max = pc
+            self._tweet(self._msg.format(pc, pc - self._last,
+                                         self._max, self._max_date.strftime('%b %d %Y'),
+                                         self._min, self._min_date.strftime('%b %d %Y')))
         finally:
             driver.quit()
