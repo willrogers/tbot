@@ -46,7 +46,8 @@ class Tweeter(tbot.Tweeter):
         driver = webdriver.PhantomJS()
         try:
             driver.get(self._url)
-            time.sleep(2)
+            # Allow plenty of time for page to load in selenium.
+            time.sleep(5)
             options = driver.find_elements_by_class_name('runner-line')
             assert len(options) == 2
             for o in options:
