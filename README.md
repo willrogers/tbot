@@ -22,7 +22,7 @@ Tweets the odds of Donald Trump surviving his first four term, from https://www.
 I'm using the account @trumpdumpodds.
 
 
-###Installing on a Raspberry Pi
+### Installing on a Raspberry Pi
 
 Prerequisites:
 
