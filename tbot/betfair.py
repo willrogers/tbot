@@ -3,6 +3,7 @@ from selenium import webdriver
 import time
 import datetime
 import parse
+import logging as log
 
 
 class Tweeter(tbot.Tweeter):
@@ -39,6 +40,10 @@ class Tweeter(tbot.Tweeter):
             print(e)
             self._last = 49.9
 
+    def _ready_to_tweet(self):
+        diff = abs(self.pc - self._last)
+        log.info('Difference to last time is {:.1f}%'.format(diff))
+        return diff > 0.2
 
     def tweet(self):
         last_tweet = self.get_last_tweet()
@@ -62,10 +67,11 @@ class Tweeter(tbot.Tweeter):
             r2text = runner2.find_element_by_class_name('first-lay-cell').get_attribute('textContent')
             odds2 = self._parse_odds(r2text)
             split = (odds1 + odds2) / 2
-            pc = (1 - (1 / split)) * 100
-            if pc < self._min: self._min = pc
-            if pc > self._max: self._max = pc
-            self._tweet(self._msg.format(pc, pc - self._last,
+            self.pc = (1 - (1 / split)) * 100
+            if self.pc < self._min: self._min = self.pc
+            if self.pc > self._max: self._max = self.pc
+            if self._ready_to_tweet():
+                self._tweet(self._msg.format(self.pc, self.pc - self._last,
                                          self._max, self._max_date.strftime('%b %d %Y'),
                                          self._min, self._min_date.strftime('%b %d %Y')))
         finally:

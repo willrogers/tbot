@@ -26,6 +26,9 @@ class Tweeter(object):
     def __init__(self, api):
         self._api = api
 
+    def _ready_to_tweet(self):
+        return True
+
     def _tweet(self, text):
         try:
             log.info(u'Tweeting {}'.format(text))
