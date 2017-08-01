@@ -7,8 +7,8 @@ fi
 
 set -ex
 
-REPO_NAME=parkstweets
-BRANCH=refactor
+REPO_NAME=tbot
+BRANCH=master
 FILE=$BRANCH.zip
 DIR=$REPO_NAME-$BRANCH
 REPO=git@github.com:willrogers/$REPO_NAME.git

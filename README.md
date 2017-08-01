@@ -1,15 +1,28 @@
+tbot
+====
+
+Some Twitter bots using Python and Tweepy.  I'm @wrgrs.
+
+
 parkstweets
-===========
+-----------
 
 The Oxford University Parks close at different times throughout the year.
 
 This script fishes the times from the webpage at http://www.parks.ox.ac.uk/closing/index.htm and tweets the closing times for the week.
 
-I'm using the account @oxparksclosing, and I'm @wrgrs.
+I'm using the account @oxparksclosing.
 
 
-Installing on a Raspberry Pi
-============================
+Dump Trump
+----------
+
+Tweets the odds of Donald Trump surviving his first four term, from https://www.betfair.com/exchange/plus/politics/market/1.129133401.
+
+I'm using the account @trumpdumpodds.
+
+
+###Installing on a Raspberry Pi
 
 Prerequisites:
 
@@ -22,4 +35,4 @@ Prerequisites:
 
 Installation:
 
-* `wget https://raw.githubusercontent.com/willrogers/parkstweets/refactor/install-pi.sh && bash install-pi.sh`
+* `wget https://raw.githubusercontent.com/willrogers/tbot/master/install-pi-trump.sh && bash install-pi-trump.sh`
