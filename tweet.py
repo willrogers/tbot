@@ -5,7 +5,7 @@ import sys
 try:
     name = sys.argv[1]
 except IndexError:
-    print('Usage: python go.py <name>')
+    print('Usage: python tweet.py <name>')
     sys.exit()
 
 config_file = 'config-' + name

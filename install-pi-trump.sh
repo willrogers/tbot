@@ -34,7 +34,7 @@ cat > trump.sh <<- EOM
 #!/bin/bash
 cd $(pwd)
 source venv/bin/activate
-python go.py trump
+python tweet.py trump
 EOM
 
 chmod +x trump.sh
