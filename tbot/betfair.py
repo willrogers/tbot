@@ -68,8 +68,12 @@ class Tweeter(tbot.Tweeter):
             odds2 = self._parse_odds(r2text)
             split = (odds1 + odds2) / 2
             self.pc = (1 - (1 / split)) * 100
-            if self.pc < self._min: self._min = self.pc
-            if self.pc > self._max: self._max = self.pc
+            if self.pc < self._min:
+                self._min = self.pc
+                self._min_date = datetime.datetime.now().date()
+            if self.pc > self._max:
+                self._max = self.pc
+                self._max_date = datetime.datetime.now().date()
             if self._ready_to_tweet():
                 self._tweet(self._msg.format(self.pc, self.pc - self._last,
                                          self._max, self._max_date.strftime('%b %d %Y'),
