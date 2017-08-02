@@ -14,10 +14,10 @@ class Tweeter(tbot.Tweeter):
         self._opt1 = opt1
         self._opt2 = opt2
         self._msg = msg
-        self._max = 50.1
-        self._max_date = datetime.date(2017, 7, 30)
-        self._min = 49.9
-        self._min_date = datetime.date(2017, 7, 30)
+        self._max = None
+        self._max_date = None
+        self._min = None
+        self._min_date = None
         self._last = None
 
     def _parse_odds(self, string):
@@ -30,15 +30,11 @@ class Tweeter(tbot.Tweeter):
     def parse_tweet(self, tweet):
         msg = ''.join([c for c in self._msg if c != '+'])
         p = parse.parse(msg, tweet)
-        try:
-            self._last = float(p[0])
-            self._max = float(p[2])
-            self._max_date = datetime.datetime.strptime(p[3], '%b %d %Y')
-            self._min = float(p[4])
-            self._min_date = datetime.datetime.strptime(p[5], '%b %d %Y')
-        except Exception as e:
-            print(e)
-            self._last = 49.9
+        self._last = float(p[0])
+        self._max = float(p[2])
+        self._max_date = datetime.datetime.strptime(p[3], '%b %d %Y').date()
+        self._min = float(p[4])
+        self._min_date = datetime.datetime.strptime(p[5], '%b %d %Y').date()
 
     def _ready_to_tweet(self):
         diff = abs(self.pc - self._last)
