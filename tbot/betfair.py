@@ -35,7 +35,7 @@ class Tweeter(tbot.Tweeter):
             self._max = float(p[2])
             self._max_date = datetime.datetime.strptime(p[3], '%b %d %Y')
             self._min = float(p[4])
-            self._min_date = datetime.datetime.strptime(p[3], '%b %d %Y')
+            self._min_date = datetime.datetime.strptime(p[5], '%b %d %Y')
         except Exception as e:
             print(e)
             self._last = 49.9
