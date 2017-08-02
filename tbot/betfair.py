@@ -40,7 +40,6 @@ class Tweeter(tbot.Tweeter):
     def _ready_to_tweet(self):
         diff = abs(self.pc - self._last)
         log.info('Difference to last time is {:.1f}%'.format(diff))
-        return True
         return diff > 0.2
 
     def tweet(self):
