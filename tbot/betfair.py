@@ -69,8 +69,12 @@ class Tweeter(tbot.Tweeter):
                 self._max = self.pc
                 self._max_date = datetime.datetime.now().date()
             if self._ready_to_tweet():
-                self._tweet(self._msg.format(self.pc, self.pc - self._last,
-                                         self._max, self._max_date.strftime('%b %d %Y'),
-                                         self._min, self._min_date.strftime('%b %d %Y')))
+                msg = self._msg.format(self.pc,
+                                       self.pc - self._last,
+                                       self._max,
+                                       self._max_date.strftime('%b %d %Y'),
+                                       self._min,
+                                       self._min_date.strftime('%b %d %Y'))
+                self._tweet(msg)
         finally:
             driver.quit()
