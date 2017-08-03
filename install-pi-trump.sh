@@ -38,7 +38,7 @@ python tweet.py trump
 EOM
 
 chmod +x trump.sh
-echo "00 * * * * $(pwd)/trump.sh >> $(pwd)/trump.log 2>&1" > trump.cron
-crontab trump.cron
+# Append to cron removing any existing trump crons
+(crontab -l | grep -v trump ; echo "00 * * * * $(pwd)/trump.sh >> $(pwd)/trump.log 2>&1") | crontab -
 
 cp ../config-trump .
