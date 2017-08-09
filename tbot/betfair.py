@@ -42,7 +42,7 @@ class Tweeter(tbot.Tweeter):
         log.info('Difference to last time is {:.1f}%'.format(diff))
         return diff > 0.3
 
-    def tweet(self):
+    def _get_tweet_text(self):
         last_tweet = self.get_last_tweet()
         self.parse_tweet(last_tweet)
         driver = webdriver.PhantomJS()
@@ -68,13 +68,12 @@ class Tweeter(tbot.Tweeter):
             if self.pc > self._max:
                 self._max = self.pc
                 self._max_date = datetime.datetime.now().date()
-            if self._ready_to_tweet():
-                msg = self._msg.format(self.pc,
-                                       self.pc - self._last,
-                                       self._max,
-                                       self._max_date.strftime('%b %d %Y'),
-                                       self._min,
-                                       self._min_date.strftime('%b %d %Y'))
-                self._tweet(msg)
+            msg = self._msg.format(self.pc,
+                                    self.pc - self._last,
+                                    self._max,
+                                    self._max_date.strftime('%b %d %Y'),
+                                    self._min,
+                                    self._min_date.strftime('%b %d %Y'))
+            return msg
         finally:
             driver.quit()

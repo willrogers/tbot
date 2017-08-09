@@ -32,11 +32,18 @@ class Tweeter(object):
     def _ready_to_tweet(self):
         return True
 
-    def _tweet(self, text):
+    def _get_tweet_text(self):
+        raise NotImplementedError()
+
+    def tweet(self):
         try:
-            log.info(u'Tweeting {}'.format(text))
-            self._api.update_status(text)
-            return True
+            text = self._get_tweet_text()
+            if self._ready_to_tweet():
+                log.info(u'Tweeting {}'.format(text))
+                self._api.update_status(text)
+                return True
+            else:
+                log.info('Not ready to tweet.')
         except Exception as e:
             error_msg = 'Failed to tweet: {}'.format(e)
             log.warn(error_msg)
