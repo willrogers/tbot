@@ -7,6 +7,9 @@ log.basicConfig(level=log.INFO,
                 datefmt='%d %b %Y %H:%M:%S')
 
 
+ERROR_USER = 'wrgrs'
+
+
 def load_api(config_file):
     with open(config_file) as f:
         lines = [l for l in f.readlines() if not l.isspace()]
@@ -34,8 +37,10 @@ class Tweeter(object):
             log.info(u'Tweeting {}'.format(text))
             self._api.update_status(text)
             return True
-        except tweepy.TweepError as e:
-            log.warn('Failed to tweet: %s' % e)
+        except Exception as e:
+            error_msg = 'Failed to tweet: {}'.format(e)
+            log.warn(error_msg)
+            self._api.send_direct_message(user=ERROR_USER, text=error_msg)
             return False
 
 
