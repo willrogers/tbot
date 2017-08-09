@@ -47,7 +47,6 @@ def get_datetime(datestring, last_month, last_year):
     except (IndexError, ValueError):
         year = last_year
 
-    print(year, month, day)
     return datetime.datetime(year, month, day)
 
 
@@ -59,10 +58,9 @@ def parse_rows(rows):
 
     for i, row in enumerate(rows):
         try:
-            print('\n{}'.format(row))
             cells = [cell.p.text.strip() for cell in row.find_all('td')]
             if not len(cells) == 4:
-                print('invalid row {}'.format(row))
+                log.debug('invalid row {}'.format(row))
                 continue
             current_date = get_datetime(cells[0], current_month, current_year)
             current_year = current_date.year
@@ -78,27 +76,34 @@ def parse_rows(rows):
 
 class Tweeter(tbot.Tweeter):
 
-    def tweet_update(self, dates):
-        for d in sorted(dates):
-            if d.date() == datetime.datetime.now().date():
-                datestring = d.strftime('%a, %b %d %Y')
-                sunset_time = dates[d][0].strftime('%H:%M')
-                close_time = dates[d][1].strftime('%H:%M')
-                text = ('%s: this week the parks close at %s (sunset %s)'
-                        % (datestring, close_time, sunset_time))
-                log.info('Tweeting: %s', text)
-                return self._tweet(text)
+    def __init__(self, api):
+        super(Tweeter, self).__init__(api)
+        self._today = datetime.datetime.now().date()
+        self._dates_from_page = []
 
-    def tweet(self):
+    def _ready_to_tweet(self):
+        for d in sorted(self._dates_from_page):
+            if d.date() == self._today:
+                return True
+        log.info('No tweet today.')
+        return False
+
+    def _get_tweet_text(self):
         # Fetch the webpage
         doc = urllib2.urlopen(URL).read()
         # Remove any non-breaking spaces.
         doc = doc.replace("\xc2\xa0", " ")
-        soup = BeautifulSoup(doc)
+        soup = BeautifulSoup(doc, "html.parser")
         rows = soup.find_all('tr')
 
         # Parse the rows
-        dates = parse_rows(rows)
-
-        if not self.tweet_update(dates):
-            log.info('No tweet today.')
+        self._dates_from_page = parse_rows(rows)
+        for d in sorted(self._dates_from_page):
+            if d.date() == self._today:
+                datestring = d.strftime('%a, %b %d %Y')
+                sunset_time = self._dates_from_page[d][0].strftime('%H:%M')
+                close_time = self._dates_from_page[d][1].strftime('%H:%M')
+                text = ('%s: this week the parks close at %s (sunset %s)'
+                        % (datestring, close_time, sunset_time))
+                log.info('Tweeting: %s', text)
+                return text
