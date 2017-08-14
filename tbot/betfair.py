@@ -27,7 +27,6 @@ class Tweeter(tbot.Tweeter):
     def _parse_last_tweet(self):
         tweets = self._api.user_timeline(id=self._api.me().id, count=5)
         for t in tweets:
-            print(t.text)
             try:
                 self._parse_tweet(t.text)
                 return
