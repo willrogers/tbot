@@ -31,11 +31,14 @@ class Tweeter(tbot.Tweeter):
     def parse_tweet(self, tweet):
         msg = ''.join([c for c in self._msg if c != '+'])
         p = parse.parse(msg, tweet)
-        self._last = float(p[0])
-        self._max = float(p[2])
-        self._max_date = datetime.datetime.strptime(p[3], '%b %d %Y').date()
-        self._min = float(p[4])
-        self._min_date = datetime.datetime.strptime(p[5], '%b %d %Y').date()
+        if p is not None:
+            self._last = float(p[0])
+            self._max = float(p[2])
+            self._max_date = datetime.datetime.strptime(p[3], '%b %d %Y').date()
+            self._min = float(p[4])
+            self._min_date = datetime.datetime.strptime(p[5], '%b %d %Y').date()
+        else:
+            raise ValueError('Could not parse tweet {}'.format(tweet))
 
     def _ready_to_tweet(self):
         diff = abs(self.pc - self._last)
