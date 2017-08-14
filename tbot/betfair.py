@@ -24,11 +24,18 @@ class Tweeter(tbot.Tweeter):
         cell_text = cell.get_attribute('textContent')
         return float(cell_text.split()[0].strip())
 
-    def get_last_tweet(self):
-        tweets = self._api.user_timeline(id=self._api.me().id, count=1)
-        return tweets[0].text
+    def _parse_last_tweet(self):
+        tweets = self._api.user_timeline(id=self._api.me().id, count=5)
+        for t in tweets:
+            print(t.text)
+            try:
+                self._parse_tweet(t.text)
+                return
+            except ValueError:
+                continue
+        raise ValueError('Failed to parse all of the last 5 tweets.')
 
-    def parse_tweet(self, tweet):
+    def _parse_tweet(self, tweet):
         msg = ''.join([c for c in self._msg if c != '+'])
         p = parse.parse(msg, tweet)
         if p is not None:
@@ -46,8 +53,7 @@ class Tweeter(tbot.Tweeter):
         return diff > 0.3
 
     def _get_tweet_text(self):
-        last_tweet = self.get_last_tweet()
-        self.parse_tweet(last_tweet)
+        self._parse_last_tweet()
         driver = webdriver.PhantomJS()
         try:
             driver.get(self._url)
