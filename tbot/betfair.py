@@ -49,7 +49,7 @@ class Tweeter(tbot.Tweeter):
     def _ready_to_tweet(self):
         diff = abs(self.pc - self._last)
         log.info('Difference to last time is {:.1f}%'.format(diff))
-        return diff > 0.3
+        return diff > 0.5
 
     def _get_tweet_text(self):
         self._parse_last_tweet()
